@@ -1,0 +1,423 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <iostream>
+#include <string>
+#include <fstream>
+#include <time.h>
+using namespace std;
+
+void PartClean(char part[])
+{
+	int i = 0;
+	while (part[i] != 0) { part[i] = ' '; i++; }
+}
+
+const std::string currentDateTime() {
+	time_t     now = time(0);
+	struct tm  tstruct;
+	char       buf[80];
+	tstruct = *localtime(&now);
+	strftime(buf, sizeof(buf), "%Y-%m-%d.%X", &tstruct);
+
+	return buf;
+}
+
+string GetStr(int input)
+{
+	string output;
+	char buf[64];
+	sprintf_s(buf, 64, "%d", input);
+	return output = buf;
+}
+
+class CVisitor
+{
+private:
+	string Name;
+	int Gender;
+public:
+	CVisitor()
+	{
+		cout << "Enter your name" << endl;
+		cin >> Name;
+		cout << "Enter your gender: 1 - Male   2 - Female" << endl;
+		int Gen;
+		while (true)
+		{
+			cin >> Gen;
+			if (Gen == 1 || Gen == 2)
+			{
+				Gender = Gen;
+				break;
+			}
+			else { cout << "1 - Male   2 - Female" << endl; cin >> Gen; }
+		}
+	}
+
+	void LeaveLogMess()
+	{
+
+	}
+
+	int GetGender() { return Gender; }
+	string GetName() { return Name; }
+};
+
+class CInhabitant
+{
+private:
+	string Name;
+	int Gender;
+	int RoomAdress;
+	int Key;
+public:
+	CInhabitant()
+	{
+		Name = " ";
+		Gender = 0;
+		RoomAdress = 0;
+		Key = 0;
+	}
+	CInhabitant(CVisitor& V)
+	{
+		Name = V.GetName();
+		Gender = V.GetGender();
+		RoomAdress = 0;
+		Key = 0;
+	}
+
+	void SendAplication()
+	{
+		ofstream Apl;
+		Apl.open("Alications.txt", ios::app);
+		if (!Apl.is_open()) { cout << "Eror" << endl; }
+		else
+		{
+			Apl << currentDateTime() << endl << "Name: " + Name << endl << "Gender: " << Gender << endl << "Room: " << RoomAdress << endl;
+		}
+		Apl.close();
+	}
+
+	int GetRoomAdress() { return RoomAdress; }
+	int GetKey() { return Key; }
+
+	int GetGender() { return Gender; }
+	string GetName() { return Name; }
+
+	void SetRoomAdress(int RoomAdress) { this->RoomAdress = RoomAdress + 1; }
+	void SetKey(int Key) { this->Key = Key; }
+};
+
+class CRoom
+{
+private:
+	int Count;
+	int Size;
+	int Gender;
+	int FreeSpace;
+	
+public:
+
+	int GetCount() { return Count; }
+	int GetSize() { return Size; }
+	int GetGender() { return Gender; }
+	int GetFreeSpace() { return FreeSpace; }
+
+	void FreeSpaceDecreace() { this->FreeSpace--; }
+
+	void SetCount(int Count) { this->Count = Count; }
+	void SetSize(int Size) { this->Size = Size; }
+	void SetGender(int Gender) { this->Gender = Gender; }
+	void SetFreeSpace(int FreeSpace) { this->FreeSpace = FreeSpace; }
+
+	
+};
+
+class CHostel
+{
+private:
+	static const int AmountOfRooms = 20;
+	CRoom Rooms[AmountOfRooms];
+public:
+	CHostel()
+	{
+		ifstream RoomsIn;
+		RoomsIn.open("Rooms.txt");
+
+		if (!RoomsIn.is_open()) { cout << "Eror" << endl; }
+		else
+		{
+			string str = " ";
+			char part[8] = "       ";
+
+			for (int i = 0; i < AmountOfRooms; i++)
+			{
+				getline(RoomsIn, str);
+				part[0] = str[0];
+				part[1] = str[1];
+				Rooms[i].SetCount(atoi(part));
+				PartClean(part);
+				part[0] = str[3];
+				Rooms[i].SetSize(atoi(part));
+				PartClean(part);
+				part[0] = str[5];
+				Rooms[i].SetFreeSpace(atoi(part));
+				PartClean(part);
+				part[0] = str[7];
+				Rooms[i].SetGender(atoi(part));
+				str = " ";
+				PartClean(part);
+			}
+		}
+		RoomsIn.close();
+	}
+
+	~CHostel()
+	{
+		ofstream RoomsOut;
+		RoomsOut.open("Rooms.txt");
+		if (!RoomsOut.is_open()) { cout << "Eror" << endl; }
+		else
+		{
+
+			char Out[14] = " ";
+			for (int i = 0; i < GetAmountOfRooms(); i++)
+			{
+				sprintf_s(Out,13, "%2d %d %d ", Rooms[i].GetCount(), Rooms[i].GetSize(), Rooms[i].GetFreeSpace());
+				char str[2] = " ";
+				sprintf_s(str, 2, "%d", Rooms[i].GetGender());
+				strcat_s(Out, str);
+				RoomsOut << Out << endl;
+			}
+			
+		}
+		RoomsOut.close(); 
+	}
+
+	int GetAmountOfRooms() { return AmountOfRooms; }
+
+	CRoom GetRoom(int i) { return Rooms[i]; }
+
+	void PrintRoom(int i)
+	{
+		printf("Number | Size  |Free |Gender of\n");
+		printf("of room|of room|space|inhabitants\n");
+		printf("%7d|%7d|%5d|", Rooms[i].GetCount(), Rooms[i].GetSize(), Rooms[i].GetFreeSpace());
+		if (Rooms[i].GetGender() == 0) { cout << "None" << endl; }
+		if (Rooms[i].GetGender() == 1) { cout << "Male" << endl; }
+		if (Rooms[i].GetGender() == 2) { cout << "Female" << endl; }
+	}
+
+	void PrintAllRooms()
+	{
+		printf("Number | Size  |Free |Gender of\n");
+		printf("of room|of room|space|inhabitants\n");
+		for (int i = 0; i < GetAmountOfRooms(); i++)
+		{
+			printf("%7d|%7d|%5d|", Rooms[i].GetCount(), Rooms[i].GetSize(), Rooms[i].GetFreeSpace());
+			if (Rooms[i].GetGender() == 0) { cout << "None" << endl; }
+			if (Rooms[i].GetGender() == 1) { cout << "Male" << endl; }
+			if (Rooms[i].GetGender() == 2) { cout << "Female" << endl; }
+		}
+		
+	}
+	void PringRoomsForGen(int Gender, int ver[])
+	{
+		printf("Number | Size  |Free |Gender of\n");
+		printf("of room|of room|space|inhabitants\n");
+		for (int i = 0; i < GetAmountOfRooms(); i++)
+		{
+			if ((Rooms[i].GetGender() == Gender || Rooms[i].GetGender() == 0) && Rooms[i].GetFreeSpace() > 0)
+			{
+				ver[i] = 1;
+				printf("%7d|%7d|%5d|", Rooms[i].GetCount(), Rooms[i].GetSize(), Rooms[i].GetFreeSpace());
+				if (Rooms[i].GetGender() == 0) { cout << "None" << endl; }
+				if (Rooms[i].GetGender() == 1) { cout << "Male" << endl; }
+				if (Rooms[i].GetGender() == 2) { cout << "Female" << endl; }
+			}
+		}
+	}
+
+};
+
+class CKey
+{
+private:
+	int Keys[20];
+public:
+	CKey()
+	{
+		ifstream KIN;
+		KIN.open("Keys.txt");
+		if (!KIN.is_open()) { cout << "Eror" << endl; }
+		else
+		{
+			for (int i = 0; i < 20; i++)
+			{
+				KIN >> Keys[i];
+			}
+		}
+		KIN.close();
+	}
+	int GetKey(int i) { return Keys[i]; }
+};
+
+class Log 
+{
+public:
+	ofstream Logout;
+	Log()
+	{
+		Logout.open("Logs.txt", ios::app);
+		if (!Logout.is_open()) { cout << "Eror" << endl; }
+	}
+	~Log()
+	{
+		Logout.close();
+	}
+
+	void PrintInLog(string str)
+	{
+		string Logmess = currentDateTime();
+		Logout << Logmess + " " + str << endl;
+	}
+};
+
+
+
+
+int main() 
+{
+	Log L;
+	CHostel H;
+	CKey K;
+
+	bool AlreadyGetRoom = false;
+
+	L.PrintInLog("Program start");
+
+	cout << "Hello, visitor!" << endl;
+	CVisitor V;
+	L.PrintInLog(V.GetName() + " enter");
+
+	while(true)
+	{
+		cout << "1 - Exit" << endl << "2 - Show pass key" << endl << "3 - Rent the room" << endl;
+		int var;
+		while (true)
+		{
+			cin >> var;
+			if (var == 1 || var == 2 || var == 3) { break; }
+			else { cout << "1 - Exit" << endl << "2 - Show pass key" << endl << "3 - Rent the room" << endl; }
+		}
+
+		switch (var)
+		{
+		case 1:
+		{
+			L.PrintInLog("Program end");
+			return 0;
+		}
+		case 2:
+		{
+			L.PrintInLog(V.GetName() + " try to enter key");
+			cout << "Enter your pass key" << endl;
+			bool IsInhab = 0;
+			int OuterKey;
+			cin >> OuterKey;
+			for (int i = 0; i < H.GetAmountOfRooms(); i++)
+			{
+				if (OuterKey == K.GetKey(i)) { IsInhab = 1; }
+			}
+			if (IsInhab) { cout << "Welcome!" << endl; L.PrintInLog(V.GetName() + " enter right key"); return 0; }
+			else { cout << "Wrong key!" << endl; L.PrintInLog(V.GetName() + " enter wrong key"); break; }
+		}
+		case 3:
+		{
+			L.PrintInLog(V.GetName() + " try to get room");
+			if (AlreadyGetRoom) { cout << "You already have room" << endl; break; }
+			cout << "1 - Any room" << endl << "2 - Show all posible for me" << endl << "3 - Exit" << endl;
+			int var2;
+			while (true)
+			{
+				cin >> var2;
+				if (var2 == 1 || var2 == 2 || var2 == 3) { break; }
+				else { cout << "1 - Any room" << endl << "2 - Show all posible for me" << endl << "3 - Exit" << endl; cin >> var2; }
+			}
+			switch (var2)
+			{
+			case 1:
+			{
+				bool get = false;
+				for (int i = 0; i < H.GetAmountOfRooms(); i++)
+				{
+					if (((H.GetRoom(i)).GetGender()) == V.GetGender() && ((H.GetRoom(i)).GetFreeSpace()) > 0)
+					{
+						get = true;
+						cout << (H.GetRoom(i)).GetCount() << " - number of your room" << endl;
+						cout << K.GetKey(i) << " - your temporary key" << endl;
+						L.PrintInLog(V.GetName() + " get room " + GetStr((H.GetRoom(i)).GetCount()) + " and key " + GetStr(K.GetKey(i)));
+						CInhabitant IN(V);
+						IN.SetKey(K.GetKey(i));
+						IN.SetRoomAdress(i);
+						(H.GetRoom(i)).FreeSpaceDecreace();
+						if ((H.GetRoom(i)).GetGender() == 0) { (H.GetRoom(i).SetGender(IN.GetGender())); }
+						AlreadyGetRoom = true;
+						IN.SendAplication();
+						cout << "Your application has been submitted for consideration" << endl;
+						break;
+					}
+				}
+				if(!get){ cout << "Sorry, no free room for you finded" << endl; L.PrintInLog(V.GetName() + " don't get any room");
+				}
+				break;
+			}
+			case 2:
+			{
+				int ver[20];
+				for (int i = 0; i < 20; i++) { ver[i] = 0; }
+				H.PringRoomsForGen(V.GetGender(), ver);
+				cout << endl;
+				bool chek = true;
+				for (int i = 0; i < 20; i++) 
+				{ 
+					if (ver[i] == 1) { chek = false; }
+				}
+				if (chek) { cout << "Sorry, no free room for you finded" << endl; L.PrintInLog(V.GetName() + " don't get any room"); break;; }
+				int chose;
+				cout << "Chose room" << endl;
+				cin >> chose;
+				chose--;
+				while (true)
+				{
+					if (ver[chose] == 1) { break; }
+					cout << "Chose free room" << endl;
+					cin >> chose;
+				}
+				cout << (H.GetRoom(chose)).GetCount() << " - number of your room" << endl;
+				cout << K.GetKey(chose) << " - your temporary key" << endl;
+				L.PrintInLog(V.GetName() + " get room " + GetStr((H.GetRoom(chose)).GetCount()) + " and key " + GetStr(K.GetKey(chose)));
+				CInhabitant IN(V);
+				IN.SetRoomAdress(chose + 1);
+				(H.GetRoom(chose)).FreeSpaceDecreace();
+				if ((H.GetRoom(chose)).GetGender() == 0) { (H.GetRoom(chose).SetGender(IN.GetGender())); }
+				for (int i = 0; i < 20; i++) { ver[i] = 0; }
+				AlreadyGetRoom = true;
+				IN.SendAplication();
+				cout << "Your application has been submitted for consideration" << endl;
+				break;
+
+			}
+			case 3:
+			{
+				break;
+			}
+			}
+		}
+		}
+	}
+	
+	
+	
+
+	return 0;
+}
